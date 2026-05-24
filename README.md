@@ -34,21 +34,21 @@ g++ -std=c++17 uhr/uhr.cpp uhr/utils.cpp uhr/quartiles_nth.cpp -x c++ src/matriz
 ## Uso
 
 ```
-./benchmark <salida.csv> <n_min> <paso> <n_max> <paso> <runs> <tipo_matriz> <algoritmo> [n0]
+./benchmark <salida.csv> <runs> <n_min> <n_max> <paso> <tipo_matriz> <algoritmo> [n0]
 ```
 
 ### Parámetros
 
-| Parámetro      | Descripción |
-|----------------|-------------|
-| `salida.csv`   | Archivo de salida con los resultados |
-| `n_min`        | Tamaño mínimo de matriz (potencia de 2) |
-| `n_max`        | Tamaño máximo de matriz (potencia de 2) |
-| `paso`         | Factor de crecimiento entre tamaños |
-| `runs`         | Número de ejecuciones por tamaño (mínimo 32) |
-| `tipo_matriz`  | Tipo de instancia (ver tabla abajo) |
-| `algoritmo`    | Algoritmo a ejecutar (1, 2 o 3) |
-| `n0`           | *(Solo algoritmo 3)* Umbral de corte para el híbrido |
+| Pos | Parámetro      | Descripción |
+|-----|----------------|-------------|
+| 1   | `salida.csv`   | Archivo de salida con los resultados |
+| 2   | `runs`         | Número de ejecuciones por tamaño (mínimo 32) |
+| 3   | `n_min`        | Tamaño mínimo de matriz |
+| 4   | `n_max`        | Tamaño máximo de matriz |
+| 5   | `paso`         | Factor multiplicativo entre tamaños (`n *= paso`, debe ser ≥ 2) |
+| 6   | `tipo_matriz`  | Tipo de instancia (ver tabla abajo) |
+| 7   | `algoritmo`    | Algoritmo a ejecutar (1, 2 o 3) |
+| 8   | `n0`           | *(Solo algoritmo 3)* Umbral de corte para el híbrido |
 
 ### Tipos de matriz
 
@@ -62,17 +62,17 @@ g++ -std=c++17 uhr/uhr.cpp uhr/utils.cpp uhr/quartiles_nth.cpp -x c++ src/matriz
 ### Ejemplos
 
 ```bash
-# Strassen puro, enteros aleatorios, n de 32 a 512
-./benchmark resultados/strassen_int.csv 32 2 512 2 32 1 2
+# Clásico, enteros aleatorios, n = 32, 64, 128, 256, 512 (paso ×2), 32 runs por tamaño
+./benchmark resultados/clasico_int.csv 32 32 512 2 1 1
 
-# Clásico, enteros aleatorios
-./benchmark resultados/clasico_int.csv 32 2 512 2 32 1 1
+# Strassen puro, enteros aleatorios
+./benchmark resultados/strassen_int.csv 32 32 512 2 1 2
 
 # Strassen puro, reales aleatorios
-./benchmark resultados/strassen_real.csv 32 2 512 2 32 2 2
+./benchmark resultados/strassen_real.csv 32 32 512 2 2 2
 
 # Strassen híbrido con umbral n0=64, matrices ralas
-./benchmark resultados/hibrido_rala.csv 32 2 512 2 32 4 3 64
+./benchmark resultados/hibrido_rala.csv 32 32 512 2 4 3 64
 ```
 
 Los resultados se guardan como CSV con columnas: `n, t_mean, t_stdev, t_Q0, t_Q1, t_Q2, t_Q3, t_Q4` (tiempos en nanosegundos).

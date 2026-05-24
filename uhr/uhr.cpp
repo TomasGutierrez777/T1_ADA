@@ -24,9 +24,9 @@
 #include "matriz.h"
 
 // --- VARIABLES GLOBALES DEL EXPERIMENTO ---
-inline int TIPO_MATRIZ = 1;
-inline int ALGORITMO = 1;   // 1: Clásico, 2: Strassen Puro, 3: Strassen Híbrido
-inline int CORTE_N0 = 2;
+static int TIPO_MATRIZ = 1;
+static int ALGORITMO = 1;   // 1: Clásico, 2: Strassen Puro, 3: Strassen Híbrido
+static int CORTE_N0 = 2;
 
 // --- FUNCIONES DE CONFIGURACIÓN Y LLENADO ---
 inline void capturar_configuracion(int argc, char *argv[]) {
@@ -87,10 +87,14 @@ int main(int argc, char *argv[])
     std::int64_t runs, lower, upper, step;
     validate_input(argc, argv, runs, lower, upper, step);
 
+    if (step < 2) {
+        std::cerr << "<STEP> debe ser >= 2 (stepping multiplicativo)." << std::endl;
+        return EXIT_FAILURE;
+    }
+
     // Set up clock variables
     std::int64_t n, i, executed_runs;
-    std::int64_t total_runs_additive = runs * (((upper - lower) / step) + 1);
-    std::int64_t total_runs_multiplicative = runs * (floor(log(upper / double(lower)) / log(step)) + 1);
+    std::int64_t total_runs_multiplicative = runs * (std::int64_t(floor(log(upper / double(lower)) / log(step))) + 1);
     std::vector<double> times(runs);
     std::vector<double> q;
     double mean_time, time_stdev, dev;
@@ -111,13 +115,13 @@ int main(int argc, char *argv[])
     // Begin testing
     std::cerr << "\033[0;36mRunning tests...\033[0m" << std::endl << std::endl;
     executed_runs = 0;
-    for (n = lower; n <= upper; n += step) {
+    for (n = lower; n <= upper; n *= step) {
         mean_time = 0;
         time_stdev = 0;
 
         // Run to compute elapsed time
         for (i = 0; i < runs; i++) {
-            display_progress(++executed_runs, total_runs_additive);
+            display_progress(++executed_runs, total_runs_multiplicative);
 
             // 1. PREPARACIÓN (Fuera del reloj)
             Matriz A = crear_matriz(n);

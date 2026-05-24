@@ -16,13 +16,73 @@
 #include <iostream>
 #include <random>
 #include <vector>
+#include <string>
 
 #include "utils.cpp"
 
-// Include to be tested files here
+// --- INCLUSIÓN DE TU CABECERA DIRECTA EN C++ ---
+#include "matriz.h"
 
+// --- VARIABLES GLOBALES DEL EXPERIMENTO ---
+inline int TIPO_MATRIZ = 1;
+inline int ALGORITMO = 1;   // 1: Clásico, 2: Strassen Puro, 3: Strassen Híbrido
+inline int CORTE_N0 = 2;
+
+// --- FUNCIONES DE CONFIGURACIÓN Y LLENADO ---
+inline void capturar_configuracion(int argc, char *argv[]) {
+    std::cout << "[DEBUG] Total argc: " << argc << std::endl;
+    for(int i = 0; i < argc; i++) {
+        std::cout << "  argv[" << i << "]: " << argv[i] << "\n";
+    }
+
+    if (argc >= 7) {
+        TIPO_MATRIZ = std::stoi(argv[6]);
+    }
+    if (argc >= 8) {
+        ALGORITMO = std::stoi(argv[7]);
+    }
+    if (argc >= 9) {
+        CORTE_N0 = std::stoi(argv[8]);
+    }
+
+    std::cout << "[DEBUG] Config Final -> TIPO_MATRIZ: " << TIPO_MATRIZ
+              << " | ALGORITMO: " << ALGORITMO << std::endl;
+}
+
+inline void rellenar_matriz_experimento(Matriz M) {
+    std::random_device rd;
+    std::mt19937_64 rng(rd());
+
+    int tam = M.n;
+
+    if (TIPO_MATRIZ == 1) { // 1. ENTEROS
+        std::uniform_int_distribution<int> dist(-100, 100);
+        for(int i = 0; i < tam * tam; i++) M.datos[i] = dist(rng);
+    }
+    else if (TIPO_MATRIZ == 2) { // 2. REALES (0 a 1)
+        std::uniform_real_distribution<double> dist(0.0, 1.0);
+        for(int i = 0; i < tam * tam; i++) M.datos[i] = dist(rng);
+    }
+    else if (TIPO_MATRIZ == 3) { // 3. ESTRUCTURADAS (Identidad)
+        for(int r = 0; r < tam; r++) {
+            for(int c = 0; c < tam; c++) {
+                M.datos[r * tam + c] = (r == c) ? 1.0 : 0.0;
+            }
+        }
+    }
+    else if (TIPO_MATRIZ == 4) { // 4. RALAS (90% ceros)
+        std::uniform_int_distribution<int> dist(-100, 100);
+        std::uniform_int_distribution<int> prob(1, 10);
+        for(int i = 0; i < tam * tam; i++) M.datos[i] = (prob(rng) == 1) ? dist(rng) : 0.0;
+    }
+}
+
+// --- MAIN DEL BENCHMARK ---
 int main(int argc, char *argv[])
 {
+    // Capturamos las banderas de la consola ANTES de que `validate_input` limpie parámetros
+    capturar_configuracion(argc, argv);
+
     // Validate and sanitize input
     std::int64_t runs, lower, upper, step;
     validate_input(argc, argv, runs, lower, upper, step);
@@ -55,16 +115,38 @@ int main(int argc, char *argv[])
         mean_time = 0;
         time_stdev = 0;
 
-        // Test configuration goes here
-
         // Run to compute elapsed time
         for (i = 0; i < runs; i++) {
-            // Remember to change total depending on step type
             display_progress(++executed_runs, total_runs_additive);
 
+            // 1. PREPARACIÓN (Fuera del reloj)
+            Matriz A = crear_matriz(n);
+            Matriz B = crear_matriz(n);
+            Matriz C = crear_matriz(n);
+
+            rellenar_matriz_experimento(A);
+            rellenar_matriz_experimento(B);
+            matriz_ceros(C);
+
+            // 2. MEDICIÓN CRÍTICA DE TIEMPO
             begin_time = std::chrono::high_resolution_clock::now();
-            // Function to test goes here
+
+            if (ALGORITMO == 1) {
+                mul_classic(A, B, C);
+            }
+            else if (ALGORITMO == 2) {
+                mul_strassen(A, B, C);
+            }
+            else if (ALGORITMO == 3) {
+                mul_hybrid(A, B, C, static_cast<size_t>(CORTE_N0));
+            }
+
             end_time = std::chrono::high_resolution_clock::now();
+
+            // 3. LIMPIEZA DE MEMORIA (Fuera del reloj)
+            liberar_matriz(A);
+            liberar_matriz(B);
+            liberar_matriz(C);
 
             elapsed_time = end_time - begin_time;
             times[i] = elapsed_time.count();

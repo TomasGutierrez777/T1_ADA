@@ -1,4 +1,4 @@
-#include "matriz/matriz.h"
+#include "matriz.h"
 
 /* Multiplicacion clasica: C = A * B.
  * Orden de loops i-k-j para localidad de caches (fila de A y fila de B

@@ -26,10 +26,7 @@ Implementación y benchmarking experimental de los algoritmos de multiplicación
 ## Compilación
 
 ```bash
-g++ -std=c++17 uhr/uhr.cpp uhr/utils.cpp uhr/quartiles_nth.cpp \
-    -x c++ src/matriz/matriz.c src/algoritmos/classic.c src/algoritmos/strassen.c \
-    -I uhr -I src -I src/matriz -I src/algoritmos \
-    -o benchmark -lm
+g++ -std=c++17 uhr/uhr.cpp uhr/utils.cpp uhr/quartiles_nth.cpp -x c++ src/matriz/matriz.c src/algoritmos/classic.c src/algoritmos/strassen.c -I uhr -I src -I src/matriz -I src/algoritmos -o benchmark -lm
 ```
 
 ---

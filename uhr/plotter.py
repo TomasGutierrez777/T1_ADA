@@ -1,53 +1,31 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-log_log = pd.read_csv("experimental_data/log-log_ms.csv")
-cool = pd.read_csv("experimental_data/cool_ms.csv")
-semi_log = pd.read_csv("experimental_data/semi-log_ns.csv")
+# Cargar los 3 algoritmos
+clasico = pd.read_csv("resultados/clasico_int.csv")
+hibrido = pd.read_csv("resultados/hibrido_int.csv")
+strassen = pd.read_csv("resultados/strassen_int.csv")
 
-fig, ax = plt.subplots(1, 3)
+fig, ax = plt.subplots(figsize=(8, 6))
 
-ax[0].errorbar(
-    log_log["n"],
-    log_log["t_mean"],
-    log_log["t_stdev"],
-    linestyle="None",
-    marker='.',
-    ecolor='tab:red'
-)
+# Lista para iterar y graficar los tres
+algoritmos = [
+    ("Clásico", clasico, 'o', 'tab:blue'),
+    ("Híbrido", hibrido, 's', 'tab:orange'),
+    ("Strassen", strassen, '^', 'tab:green')
+]
 
-ax[0].set_title("log-log")
-ax[0].set_xlabel("x axis label")
-ax[0].set_ylabel("y axis label")
-ax[0].set_xscale("log")
-ax[0].set_yscale("log")
+for nombre, df, marcador, color in algoritmos:
+    ax.errorbar(df["n"], df["t_mean"], yerr=df["t_stdev"], fmt=f'-{marcador}', color=color, label=nombre)
 
-ax[1].errorbar(
-    cool["p"],
-    cool["t_mean"],
-    cool["t_stdev"],
-    linestyle="None",
-    marker='.',
-    ecolor='tab:red'
-)
-
-ax[1].set_title("Super cool and descriptive name")
-ax[1].set_xlabel("Unit length variable")
-ax[1].set_ylabel("Response")
-
-ax[2].errorbar(
-    semi_log["p"],
-    semi_log["t_mean"],
-    semi_log["t_stdev"],
-    linestyle="None",
-    marker='.',
-    ecolor='tab:red'
-)
-
-ax[2].set_title("semi-log plot")
-ax[2].set_xlabel("Positions")
-ax[2].set_ylabel("Average happiness")
-ax[2].set_xscale("log", base=2)
+# Configurar el gráfico único (Log-Log)
+ax.set_title("Comparación de Algoritmos en Matriz de Números Enteros (Escala Log-Log)")
+ax.set_xlabel("Tamaño Matriz (N)")
+ax.set_ylabel("Tiempo (us)")
+ax.set_xscale("log")
+ax.set_yscale("log")
+ax.grid(True, which="both", ls="--", alpha=0.5)
+ax.legend()
 
 fig.tight_layout()
-fig.savefig("sample_plots.png")
+fig.savefig("graficos/sample_plots.png")
